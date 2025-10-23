@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir>
+set -euo pipefail
+
+BUILD_DIR="$1"
+CACHE_DIR="${2:-/tmp/cache}"
+
+GS_VERSION="9.54.0"
+ARCH="x86_64"
+TARBALL="ghostscript-${GS_VERSION}-linux-${ARCH}.tgz"
+URL="https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs${GS_VERSION/./0}/$TARBALL"
+
+echo "-----> Installing Ghostscript ${GS_VERSION}"
+
+mkdir -p "${CACHE_DIR}/ghostscript" "${BUILD_DIR}/vendor/gs/bin"
+
+if [[ ! -f "${CACHE_DIR}/ghostscript/${TARBALL}" ]]; then
+  echo "       >> downloading archive (first build only)…"
+  curl -sSL "${URL}" -o "${CACHE_DIR}/ghostscript/${TARBALL}"
+else
+  echo "       >> using cached archive"
+fi
+
+tar xzf "${CACHE_DIR}/ghostscript/${TARBALL}" -C "${BUILD_DIR}/vendor/gs/bin"
+mv "${BUILD_DIR}/vendor/gs/bin/ghostscript-${GS_VERSION}-linux-${ARCH}/gs-${GS_VERSION}-linux-${ARCH}" \
+   "${BUILD_DIR}/vendor/gs/bin/gs"
+
+echo "-----> Writing $HOME/.profile.d/ghostscript.sh"
+mkdir -p "${BUILD_DIR}/.profile.d"
+cat > "${BUILD_DIR}/.profile.d/ghostscript.sh" <<'EOF'
+# Adds Ghostscript to PATH at runtime
+export PATH="$HOME/vendor/gs/bin:$PATH"
+EOF
