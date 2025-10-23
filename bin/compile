@@ -6,9 +6,10 @@ BUILD_DIR="$1"
 CACHE_DIR="${2:-/tmp/cache}"
 
 GS_VERSION="9.54.0"
+GS_PATH="${GS_VERSION//./}"
 ARCH="x86_64"
 TARBALL="ghostscript-${GS_VERSION}-linux-${ARCH}.tgz"
-URL="https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs${GS_VERSION/./0}/$TARBALL"
+URL="https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs$GS_PATH/$TARBALL"
 
 echo "-----> Installing Ghostscript ${GS_VERSION}"
 
@@ -22,7 +23,7 @@ else
 fi
 
 tar xzf "${CACHE_DIR}/ghostscript/${TARBALL}" -C "${BUILD_DIR}/vendor/gs/bin"
-mv "${BUILD_DIR}/vendor/gs/bin/ghostscript-${GS_VERSION}-linux-${ARCH}/gs-${GS_VERSION}-linux-${ARCH}" \
+mv "${BUILD_DIR}/vendor/gs/bin/ghostscript-${GS_VERSION}-linux-${ARCH}/gs-$GS_PATH-linux-${ARCH}" \
    "${BUILD_DIR}/vendor/gs/bin/gs"
 
 echo "-----> Writing $HOME/.profile.d/ghostscript.sh"
