@@ -1,34 +1,17 @@
 #!/usr/bin/env bash
 # bin/compile <build-dir> <cache-dir>
-set -euo pipefail
+echo "-----> Installing Ghostscript 9.54.0"
 
-BUILD_DIR="$1"
-CACHE_DIR="${2:-/tmp/cache}"
+BUILD_DIR=$1
+PACKAGE="https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs9540/ghostscript-9.54.0-linux-x86_64.tgz"
+BINARY="ghostscript-9.54.0-linux-x86_64/gs-9540-linux-x86_64"
+LOCATION="$BUILD_DIR/vendor/gs/bin"
 
-GS_VERSION="9.54.0"
-GS_PATH="${GS_VERSION//./}"
-ARCH="x86_64"
-TARBALL="ghostscript-${GS_VERSION}-linux-${ARCH}.tgz"
-URL="https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs$GS_PATH/$TARBALL"
+mkdir -p $LOCATION
+curl $PACKAGE -L -s -o - | tar xzf - -C $LOCATION
+mv $LOCATION/$BINARY $LOCATION/gs
 
-echo "-----> Installing Ghostscript ${GS_VERSION}"
+echo "-----> Building runtime environment for Ghostscript"
 
-mkdir -p "${CACHE_DIR}/ghostscript" "${BUILD_DIR}/vendor/gs/bin"
-
-if [[ ! -f "${CACHE_DIR}/ghostscript/${TARBALL}" ]]; then
-  echo "       >> downloading archive (first build only)…"
-  curl -sSL "${URL}" -o "${CACHE_DIR}/ghostscript/${TARBALL}"
-else
-  echo "       >> using cached archive"
-fi
-
-tar xzf "${CACHE_DIR}/ghostscript/${TARBALL}" -C "${BUILD_DIR}/vendor/gs/bin"
-mv "${BUILD_DIR}/vendor/gs/bin/ghostscript-${GS_VERSION}-linux-${ARCH}/gs-$GS_PATH-linux-${ARCH}" \
-   "${BUILD_DIR}/vendor/gs/bin/gs"
-
-echo "-----> Writing $HOME/.profile.d/ghostscript.sh"
-mkdir -p "${BUILD_DIR}/.profile.d"
-cat > "${BUILD_DIR}/.profile.d/ghostscript.sh" <<'EOF'
-# Adds Ghostscript to PATH at runtime
-export PATH="$HOME/vendor/gs/bin:$PATH"
-EOF
+mkdir -p $BUILD_DIR/.profile.d
+echo "export PATH=\"\$HOME/vendor/gs/bin:\$PATH\"" > $BUILD_DIR/.profile.d/ghostscript.sh
